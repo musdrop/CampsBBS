@@ -1,0 +1,7 @@
+spring:
+    application:
+        name: bbs-common
+#驼峰映射
+mybatis-plus:
+    configuration:
+        map-underscore-to-camel-case: true
