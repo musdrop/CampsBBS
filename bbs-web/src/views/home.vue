@@ -241,18 +241,6 @@ const props = defineProps({
 	}
 });
 
-// 监听搜索关键词变化
-watch(() => props.searchQuery, (newVal) => {
-	queryForm.title = newVal;
-	// 重置分页参数
-	currentPage.value = 1;
-	forumList.value = [];
-	hasMore.value = true;
-
-	// 重新加载数据
-	forumInit();
-}, { immediate: true });
-
 // 默认头像
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
 
@@ -266,6 +254,7 @@ const currentPage = ref(1);
 const hasMore = ref(true);
 const loading = ref(false);
 const initLoading = ref(true);
+
 
 // 初始化帖子列表
 const forumInit = async () => {
@@ -302,6 +291,18 @@ const forumInit = async () => {
 		initLoading.value = false;
 	}
 };
+
+// 监听搜索关键词变化
+watch(() => props.searchQuery, (newVal) => {
+	queryForm.title = newVal;
+	// 重置分页参数
+	currentPage.value = 1;
+	forumList.value = [];
+	hasMore.value = true;
+
+	// 重新加载数据
+	forumInit();
+}, { immediate: true });
 
 // 首次加载
 onMounted(() => {

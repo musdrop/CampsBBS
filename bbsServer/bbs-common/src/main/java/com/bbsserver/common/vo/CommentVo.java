@@ -1,19 +1,34 @@
 package com.bbsserver.common.vo;
 
-import com.bbsserver.common.consts.CommonConstant;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import java.time.LocalDateTime;
+import com.bbsserver.common.consts.CommonConstant;
 import lombok.Data;
+
+import java.util.Date;
+import java.util.List;
 
 @Data
 public class CommentVo {
     private Integer id;
-    private Integer authorId;
+    
+    private Integer forumId;
+    
+    private Integer userId;
+    
     private String authorName;
-    private String authorAccount;
-
+    
+    private String authorAvatar;
+    
+    private Integer parentId;
+    
     private String content;
-
+    
+    private Integer likeCount;
+    
+    private Boolean isLiked = false;
+    
     @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
-    private LocalDateTime createTime;
+    private Date createTime;
+    
+    private List<CommentVo> replies;
 }

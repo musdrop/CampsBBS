@@ -1,6 +1,7 @@
 package com.bbsserver.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bbsserver.common.dto.ForumListDTO;
 import com.bbsserver.common.entity.bbsForum;
 import com.bbsserver.common.exception.CommonException;
@@ -14,9 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import cn.hutool.core.collection.ListUtil;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Log4j2
@@ -41,46 +44,50 @@ public class ForumService {
         forumMapper.insert(forum);
     }
 
-    public List<List<ForumVo>> list(ForumListDTO listDTO) {
-        //分页查询
-        if(listDTO.getPageNum()!=null && listDTO.getPageSize()!=null){
-            List<ForumVo> forumVoList = forumMapper.forumAndUserList();
-            return ListUtil.partition(forumVoList, 4);
-        }
+    public Map<String, Object> list(ForumListDTO listDTO) {
+        Map<String, Object> result = new HashMap<>();
+        List<ForumVo> forumList = new ArrayList<>();
+        
+        // 确保分页参数有效
+        int pageNum = listDTO.getPageNum() != null ? listDTO.getPageNum() : 1;
+        int pageSize = listDTO.getPageSize() != null ? listDTO.getPageSize() : 10;
+        
+        // 设置查询条件
+        QueryWrapper<bbsForum> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("delete_flag", 0); // 只查询未删除的帖子
+        queryWrapper.orderByDesc("create_time"); // 按创建时间倒序排列
 
-
-        //按标题查询
-        if(listDTO.getTitle()!=null){
-            QueryWrapper<bbsForum> queryWrapper = new QueryWrapper<>();
-            queryWrapper.like("title", listDTO.getTitle());
-            List<bbsForum> forumList = forumMapper.selectList(queryWrapper);
-            return ListUtil.partition(forumList.stream().map(forum -> {
-                ForumVo forumVo = new ForumVo();
-                BeanUtils.copyProperties(forum, forumVo);
-                return forumVo;
-            }).toList(), 4);
+        // 按标题模糊查询
+        if (listDTO.getTitle() != null && !listDTO.getTitle().trim().isEmpty()) {
+            queryWrapper.like("title", listDTO.getTitle().trim());
         }
-        //查询自己的帖子
-        else if(listDTO.getUserId()!=null){
-            //从session中获取当前登录用户id
-            int userId = SessionManager.getUser().getId();
-            //查询当前用户的所有帖子
-            QueryWrapper<bbsForum> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("user_id", userId);
-            queryWrapper.eq("delete_flag", 0);
-            List<bbsForum> forumList =forumMapper.selectList(queryWrapper);
-            return ListUtil.partition(forumList.stream().map(forum -> {
-                ForumVo forumVo = new ForumVo();
-                BeanUtils.copyProperties(forum, forumVo);
-                return forumVo;
-            }).toList(), 4);
+        
+        // 查询特定用户的帖子
+        if (listDTO.getUserId() != null) {
+            queryWrapper.eq("user_id", listDTO.getUserId());
         }
-        //首页展示所有帖子
-        else{
-            List<ForumVo> forumVoList = forumMapper.forumAndUserList();
-            //将帖子按照时间分组
-            return ListUtil.partition(forumVoList, 4);
+        
+        // 使用MyBatis-Plus的分页功能
+        Page<bbsForum> page = new Page<>(pageNum, pageSize);
+        Page<bbsForum> forumPage = forumMapper.selectPage(page, queryWrapper);
+        
+        // 获取分页结果并转换为ForumVo列表
+        List<bbsForum> records = forumPage.getRecords();
+        for (bbsForum forum : records) {
+            ForumVo forumVo = new ForumVo();
+            BeanUtils.copyProperties(forum, forumVo);
+            // 这里可以添加额外的转换逻辑，如设置作者名称等
+            // 例如：forumVo.setAuthorName(getUserName(forum.getAuthorId()));
+            forumList.add(forumVo);
         }
+        
+        // 返回分页信息和列表数据
+        result.put("list", forumList);
+        result.put("total", forumPage.getTotal());
+        result.put("pages", forumPage.getPages());
+        result.put("current", forumPage.getCurrent());
+        
+        return result;
     }
 
     public void delete(int id){
@@ -97,7 +104,34 @@ public class ForumService {
         }
         //删除帖子
         forum.setDeleteFlag(1);
+        forum.setUpdateTime(new Date());
         forumMapper.updateById(forum);
     }
-
+    
+    // 新增：获取帖子详情
+    public ForumVo getDetail(Integer id) {
+        bbsForum forum = forumMapper.selectById(id);
+        if (forum == null || forum.getDeleteFlag() == 1) {
+            throw new CommonException("帖子不存在或已被删除");
+        }
+        
+        ForumVo forumVo = new ForumVo();
+        BeanUtils.copyProperties(forum, forumVo);
+        // 这里可以添加额外的逻辑，如设置作者信息等
+        
+        return forumVo;
+    }
+    
+    // 新增：增加帖子浏览量
+    public void incrementViewCount(Integer id) {
+        bbsForum forum = forumMapper.selectById(id);
+        if (forum == null || forum.getDeleteFlag() == 1) {
+            throw new CommonException("帖子不存在或已被删除");
+        }
+        
+        // 这里假设有一个viewCount字段，实际中需要根据你的数据库模型调整
+        // forum.setViewCount(forum.getViewCount() + 1);
+        forum.setUpdateTime(new Date());
+        forumMapper.updateById(forum);
+    }
 }
