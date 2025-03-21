@@ -42,6 +42,13 @@ public class ForumService {
     }
 
     public List<List<ForumVo>> list(ForumListDTO listDTO) {
+        //分页查询
+        if(listDTO.getPageNum()!=null && listDTO.getPageSize()!=null){
+            List<ForumVo> forumVoList = forumMapper.forumAndUserList();
+            return ListUtil.partition(forumVoList, 4);
+        }
+
+
         //按标题查询
         if(listDTO.getTitle()!=null){
             QueryWrapper<bbsForum> queryWrapper = new QueryWrapper<>();

@@ -6,4 +6,6 @@ import lombok.Data;
 public class ForumListDTO {
     private String title;
     private Integer userId;
+    private Integer pageNum;
+    private Integer pageSize;
 }

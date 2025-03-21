@@ -17,9 +17,13 @@ spring:
     application:
         name: bbs-admin
     datasource:
+        #driver-class-name: org.sqlite.JDBC
+        #url: jdbc:sqlite:./bbsServer/bbs.db
+        #sername: root
+        #password: root
         username: BBS
         password: 233333
-        url: jdbc:oracle:thin:@localhost:1521:orcl
+        url: jdbc:oracle:thin:@localhost:1521:xe
         driver-class-name: oracle.jdbc.OracleDriver
     servlet:
         multipart:
