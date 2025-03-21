@@ -1,7 +1,6 @@
 package com.bbsserver.service;
 
 
-import com.bbsserver.common.entity.Comment;
 import com.bbsserver.common.mapper.CommentMapper;
 import com.bbsserver.common.vo.CommentVo;
 import org.springframework.beans.factory.annotation.Autowired;

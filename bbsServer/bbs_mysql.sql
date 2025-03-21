@@ -1,4 +1,4 @@
-create table comment
+create table bbs_comment
 (
     id          int auto_increment
         primary key,
@@ -9,7 +9,7 @@ create table comment
 )
     comment '评论';
 
-create table forum
+create table bbs_forum
 (
     id          int auto_increment
         primary key,
@@ -23,7 +23,7 @@ create table forum
 )
     comment '帖子';
 
-create table user
+create table bbs_user
 (
     id          int auto_increment
         primary key,

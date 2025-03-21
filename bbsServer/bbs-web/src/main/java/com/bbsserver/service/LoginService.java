@@ -3,7 +3,7 @@ package com.bbsserver.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.bbsserver.common.dto.LoginDTO;
-import com.bbsserver.common.entity.User;
+import com.bbsserver.common.entity.bbsUser;
 import com.bbsserver.common.exception.CommonException;
 import com.bbsserver.common.mapper.UserMapper;
 import com.bbsserver.common.service.VerificationCodeService;
@@ -14,13 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
-/**
- * LoginService
- *
- * @author yangjiajia
- * @createdAt 2024/4/2 11:49
- */
+
 @Service
 public class LoginService {
 
@@ -37,10 +33,10 @@ public class LoginService {
             throw new CommonException("验证码不正确");
         }
         //创建查询条件
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<bbsUser> queryWrapper = new QueryWrapper<>();
         //查找前端传过来的账号
-        queryWrapper.lambda().eq(User::getAccount, loginDTO.getAccount());
-        User user = userMapper.selectOne(queryWrapper);
+        queryWrapper.lambda().eq(bbsUser::getAccount, loginDTO.getAccount());
+        bbsUser user = userMapper.selectOne(queryWrapper);
 
         if (null == user) {
             throw new CommonException("账号不存在");
@@ -57,19 +53,19 @@ public class LoginService {
     //处理注册表单
     public void register(RegisterDTO registerDTO) {
         //创建查询提交
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(User::getAccount, registerDTO.getAccount());
+        QueryWrapper<bbsUser> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(bbsUser::getAccount, registerDTO.getAccount());
         //查询要注册的账号是否已存在
-        User user = userMapper.selectOne(queryWrapper);
+        bbsUser user = userMapper.selectOne(queryWrapper);
         if (null != user) {
             throw new CommonException("账号已存在");
         }
         //创建用户账号
-        user = new User();
+        user = new bbsUser();
         BeanUtils.copyProperties(registerDTO, user);
         user.setAuth(0);
-        user.setCreateTime(LocalDateTime.now());
-        user.setUpdateTime(LocalDateTime.now());
+        user.setCreateTime(new Date());
+        user.setUpdateTime(new Date());
         userMapper.insert(user);
     }
 

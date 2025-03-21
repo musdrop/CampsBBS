@@ -33,11 +33,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.bbsserver</groupId>
             <artifactId>bbs-web</artifactId>
             <version>0.0.1-SNAPSHOT</version>

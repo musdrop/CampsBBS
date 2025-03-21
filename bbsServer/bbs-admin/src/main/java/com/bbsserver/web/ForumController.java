@@ -1,13 +1,9 @@
 package com.bbsserver.web;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.bbsserver.common.entity.Forum;
 import com.bbsserver.common.vo.DataResult;
-import com.bbsserver.common.vo.PageVo;
 import com.bbsserver.dto.ForumListDTO;
 import com.bbsserver.service.ForumService;
-import io.micrometer.common.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

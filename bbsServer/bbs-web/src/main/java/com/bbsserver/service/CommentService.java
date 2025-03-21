@@ -1,7 +1,7 @@
 package com.bbsserver.service;
 
 
-import com.bbsserver.common.entity.Comment;
+import com.bbsserver.common.entity.bbsComment;
 import com.bbsserver.common.mapper.CommentMapper;
 import com.bbsserver.common.utils.SessionManager;
 import com.bbsserver.common.vo.CommentVo;
@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Log4j2
@@ -23,10 +24,10 @@ public class CommentService {
 
     public void save(CommentSaveDTO commentSaveDTO) {
         log.info("评论发布");
-        Comment comment = new Comment();
+        bbsComment comment = new bbsComment();
         BeanUtils.copyProperties(commentSaveDTO, comment);
         comment.setUserId(SessionManager.getUser().getId());
-        comment.setCreateTime(LocalDateTime.now());
+        comment.setCreateTime(new Date());
         commentMapper.insert(comment);
     }
 

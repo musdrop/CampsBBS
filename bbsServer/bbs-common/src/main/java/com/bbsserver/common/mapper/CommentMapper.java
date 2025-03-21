@@ -1,16 +1,16 @@
 package com.bbsserver.common.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.bbsserver.common.entity.Comment;
+import com.bbsserver.common.entity.bbsComment;
 import com.bbsserver.common.vo.CommentVo;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
 @Mapper
-public interface CommentMapper extends BaseMapper<Comment> {
+public interface CommentMapper extends BaseMapper<bbsComment> {
 
-    @Select("select * from comment where forum_id = #{forumId}")
+    @Select("select * from BBS_COMMENT where forum_id = #{forumId}")
     @Results({
             @Result(property = "id", column = "id"),
             @Result(property = "authorId", column = "user_id"),

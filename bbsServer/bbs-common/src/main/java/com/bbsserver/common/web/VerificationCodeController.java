@@ -6,12 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * VerificationCodeController
- *
- * @author yangjiajia
- * @createdAt 2024/4/2 11:42
- */
+
 @RestController
 public class VerificationCodeController {
 

@@ -1,7 +1,6 @@
 package com.bbsserver.web;
 
 import com.bbsserver.common.dto.ForumListDTO;
-import com.bbsserver.common.entity.Forum;
 import com.bbsserver.common.vo.DataResult;
 import com.bbsserver.dto.ForumSaveDTO;
 import jakarta.validation.Valid;

@@ -17,15 +17,15 @@ spring:
     application:
         name: bbs-admin
     datasource:
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        password: qq2712448668
-        url: jdbc:mysql://localhost:3306/bbs
-        username: root
+        username: BBS
+        password: 233333
+        url: jdbc:oracle:thin:@localhost:1521:orcl
+        driver-class-name: oracle.jdbc.OracleDriver
     servlet:
         multipart:
             max-file-size: 10MB
             max-request-size: 20MB
 file:
     image:
-        path: ./bbs-web/src/main/resources/static/
-        tpath: ./bbs-web/target/classes/static/
+        path: ./bbsServer/bbs-web/src/main/resources/static/
+        tpath: ./bbsServer/bbs-web/target/classes/static/

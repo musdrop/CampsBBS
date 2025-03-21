@@ -8,8 +8,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Date;
+
 @Data
-public class Forum {
+public class bbsForum {
     @TableId(type = IdType.AUTO)
     private Integer id;
 
@@ -30,8 +32,8 @@ public class Forum {
     private int deleteFlag=0;
 
     @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
-    private LocalDateTime createTime;
+    private Date createTime;
 
     @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
-    private LocalDateTime updateTime;
+    private Date updateTime;
 }

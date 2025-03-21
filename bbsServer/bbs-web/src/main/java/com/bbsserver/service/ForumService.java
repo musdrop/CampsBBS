@@ -2,7 +2,7 @@ package com.bbsserver.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.bbsserver.common.dto.ForumListDTO;
-import com.bbsserver.common.entity.Forum;
+import com.bbsserver.common.entity.bbsForum;
 import com.bbsserver.common.exception.CommonException;
 import com.bbsserver.common.mapper.ForumMapper;
 import com.bbsserver.common.utils.SessionManager;
@@ -15,8 +15,8 @@ import org.springframework.stereotype.Service;
 import cn.hutool.core.collection.ListUtil;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -29,14 +29,14 @@ public class ForumService {
         //从session中获取当前登录用户id
         int userId = SessionManager.getUser().getId();
         log.info("帖子发布:{}", forumSaveDTO);
-        Forum forum = new Forum();
+        bbsForum forum = new bbsForum();
         //将forumSaveDTO的属性拷贝到forum中
         BeanUtils.copyProperties(forumSaveDTO, forum);
         //设置帖子作者id
         forum.setAuthorId(userId);
         //设置时间
-        forum.setCreateTime(LocalDateTime.now());
-        forum.setUpdateTime(LocalDateTime.now());
+        forum.setCreateTime(new Date());
+        forum.setUpdateTime(new Date());
         //插入数据库中
         forumMapper.insert(forum);
     }
@@ -44,9 +44,9 @@ public class ForumService {
     public List<List<ForumVo>> list(ForumListDTO listDTO) {
         //按标题查询
         if(listDTO.getTitle()!=null){
-            QueryWrapper<Forum> queryWrapper = new QueryWrapper<>();
+            QueryWrapper<bbsForum> queryWrapper = new QueryWrapper<>();
             queryWrapper.like("title", listDTO.getTitle());
-            List<Forum> forumList = forumMapper.selectList(queryWrapper);
+            List<bbsForum> forumList = forumMapper.selectList(queryWrapper);
             return ListUtil.partition(forumList.stream().map(forum -> {
                 ForumVo forumVo = new ForumVo();
                 BeanUtils.copyProperties(forum, forumVo);
@@ -58,10 +58,10 @@ public class ForumService {
             //从session中获取当前登录用户id
             int userId = SessionManager.getUser().getId();
             //查询当前用户的所有帖子
-            QueryWrapper<Forum> queryWrapper = new QueryWrapper<>();
+            QueryWrapper<bbsForum> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("user_id", userId);
             queryWrapper.eq("delete_flag", 0);
-            List<Forum> forumList =forumMapper.selectList(queryWrapper);
+            List<bbsForum> forumList =forumMapper.selectList(queryWrapper);
             return ListUtil.partition(forumList.stream().map(forum -> {
                 ForumVo forumVo = new ForumVo();
                 BeanUtils.copyProperties(forum, forumVo);
@@ -80,7 +80,7 @@ public class ForumService {
         //从session中获取当前登录用户id
         int userId = SessionManager.getUser().getId();
         //查询帖子
-        Forum forum = forumMapper.selectById(id);
+        bbsForum forum = forumMapper.selectById(id);
         if(forum == null){
             throw new CommonException("帖子不存在");
         }

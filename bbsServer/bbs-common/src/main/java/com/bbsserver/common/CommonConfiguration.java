@@ -57,7 +57,7 @@ public class CommonConfiguration implements WebMvcConfigurer {
         //单页分页的条数限制
         paginationInnerInterceptor.setMaxLimit(20L);
         //设置数据库类型
-        paginationInnerInterceptor.setDbType(DbType.MYSQL);
+        paginationInnerInterceptor.setDbType(DbType.ORACLE);
 
         interceptor.addInnerInterceptor(paginationInnerInterceptor);
         return interceptor;

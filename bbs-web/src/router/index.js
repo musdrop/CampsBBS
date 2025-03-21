@@ -64,7 +64,7 @@ router.beforeEach((to, from, next) => {
     document.title = "NUAA校园论坛";
   }
   let user = cookies.get("bbs-web");
-  if (to.name === "login") {
+  if (to.name === "login"||to.name=== "register") {
     next();
   } else if (user) {
     // 如果已经登录

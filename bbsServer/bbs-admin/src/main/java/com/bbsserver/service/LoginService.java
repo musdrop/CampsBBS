@@ -3,7 +3,7 @@ package com.bbsserver.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.bbsserver.common.dto.LoginDTO;
-import com.bbsserver.common.entity.User;
+import com.bbsserver.common.entity.bbsUser;
 import com.bbsserver.common.exception.CommonException;
 import com.bbsserver.common.mapper.UserMapper;
 import com.bbsserver.common.service.VerificationCodeService;
@@ -12,12 +12,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**
- * LoginService
- *
- * @author yangjiajia
- * @createdAt 2024/4/2 11:49
- */
+
 @Service
 public class LoginService {
 
@@ -35,10 +30,10 @@ public class LoginService {
             throw new CommonException("验证码不正确");
         }
         //创建查询条件
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<bbsUser> queryWrapper = new QueryWrapper<>();
         //查找前端传过来的账号
-        queryWrapper.lambda().eq(User::getAccount, loginDTO.getAccount());
-        User user = userMapper.selectOne(queryWrapper);
+        queryWrapper.lambda().eq(bbsUser::getAccount, loginDTO.getAccount());
+        bbsUser user = userMapper.selectOne(queryWrapper);
 
         if (null == user) {
             throw new CommonException("账号不存在");

@@ -1,17 +1,16 @@
 package com.bbsserver.common.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.bbsserver.common.entity.Forum;
-import com.bbsserver.common.entity.User;
+import com.bbsserver.common.entity.bbsForum;
 import com.bbsserver.common.vo.ForumVo;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
 @Mapper
-public interface ForumMapper extends BaseMapper<Forum> {
+public interface ForumMapper extends BaseMapper<bbsForum> {
 
-    @Select("select * from forum where delete_flag = 0")
+    @Select("select * from BBS_FORUM where delete_flag = 0")
     @Results({
             @Result(property = "id", column = "id"),
             @Result(property = "title", column = "title"),

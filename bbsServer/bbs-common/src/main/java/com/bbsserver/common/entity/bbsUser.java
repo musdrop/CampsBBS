@@ -8,21 +8,30 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
-public class Comment {
+public class bbsUser {
     @TableId(type = IdType.AUTO)
     private Integer id;
 
-    private Integer forumId;
+    private String account;
 
-    private Integer userId;
+    private String name;
 
-    @TableField(exist = false)
-    private String userName;
+    private String password;
 
-    private String content;
+    private String mail;
+
+    @TableField(value = "head")
+    private String headPath;
+
+    //为0时是普通用户，为1时是管理员
+    private Integer auth;
 
     @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
-    private LocalDateTime createTime;
+    private Date createTime;
+
+    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
+    private Date updateTime;
 }
