@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-model="visible" :destroy-on-close="true" :show-close="true" :close-on-click-modal="false"
+    <el-dialog v-model="visible" :destroy-on-close="true" :show-close="false" :close-on-click-modal="true"
         :close-on-press-escape="true" top="5vh" class="forum-detail-dialog" @closed="handleDialogClose"
         :modal-append-to-body="true" :append-to-body="true">
         <div class="forum-detail-container">
@@ -281,8 +281,10 @@ const handleCommentSend = async (content) => {
 
         replyTo.value = null;
 
-        // 重新加载第一页评论
+        // 无论是否有更多评论，都重置为第一页并重新加载
         commentPage.value = 1;
+        commentList.value = []; // 清空现有评论列表，确保新评论会显示
+        hasMoreComments.value = true; // 重置加载更多状态
         await loadComments(detailForm.id);
 
         // 更新帖子评论数

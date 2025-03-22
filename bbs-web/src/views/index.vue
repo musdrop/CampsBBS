@@ -5,7 +5,7 @@
       <el-header class="header">
         <el-menu class="el-menu" mode="horizontal" :ellipsis="false" @select="handleSelect" router
           :default-active="defaultActive">
-          <el-menu-item index="/home" @click="toHome" class="logo-item">
+          <el-menu-item index="/home" class="logo-item">
             <template #title>
               <el-icon><home-filled /></el-icon>
               <span>NUAA校园论坛</span>
@@ -14,14 +14,13 @@
           <!--搜索栏-->
           <div class="search-container">
             <div class="search-wrapper">
-              <el-input v-model="queryForm.title" clearable placeholder="输入标题搜索" class="search-input">
-              </el-input>
-            </div>
-            <el-button class="search-button" @click="handleSearch">
-              <el-icon class="search-icon">
+              <el-icon class="search-icon-prefix">
                 <search />
               </el-icon>
-            </el-button>
+              <el-input v-model="queryForm.title" clearable placeholder="输入标题搜索" class="search-input"
+                @input="handleSearch">
+              </el-input>
+            </div>
           </div>
           <div class="flex-grow" />
           <!--各功能页面-->
@@ -41,7 +40,7 @@
               <span>个人中心</span>
             </template>
           </el-menu-item>
-          <el-sub-menu index="" class="nav-item">
+          <el-sub-menu index="user-menu" class="nav-item">
             <template #title>
               <el-icon>
                 <setting />
@@ -61,11 +60,12 @@
 </template>
 
 <script setup>
-import { getCurrentInstance, reactive, ref } from "vue";
-import { useRouter } from "vue-router";
+import { getCurrentInstance, reactive, ref, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { HomeFilled, Edit, User, Setting, Search } from '@element-plus/icons-vue';
 
 const { proxy } = getCurrentInstance();
+const route = useRoute();
 
 // 搜索参数
 let queryForm = reactive({ title: '' });
@@ -73,7 +73,6 @@ let queryForm = reactive({ title: '' });
 const toHome = () => {
   queryForm.title = '';
   proxy.router.push('/home');
-  defaultActive.value = "/home";
 };
 
 const handleSearch = () => {
@@ -82,7 +81,6 @@ const handleSearch = () => {
     proxy.router.push('/home');
   }
   // 子组件会监听searchQuery的变化来获取数据
-  defaultActive.value = "/home";
 };
 
 //用户信息
@@ -90,17 +88,22 @@ const userInfo = reactive({
   name: "",
   account: "",
 });
-const defaultActive = ref("/forum");
+
+const defaultActive = ref("/home");
+
+// 监听路由变化，更新选中状态
+watch(() => route.path, (newPath) => {
+  defaultActive.value = newPath;
+}, { immediate: true });
+
 //用户信息初始化，从cookie中获取
 const init = () => {
   let loginUser = proxy.cookies.get("bbs-web");
   userInfo.name = loginUser.name;
   userInfo.account = loginUser.account;
-  //获取当前路由
-  let da = proxy.router.currentRoute.value.path;
-  if (da) {
-    defaultActive.value = da;
-  }
+
+  // 获取当前路由
+  defaultActive.value = proxy.router.currentRoute.value.path;
 };
 init();
 
@@ -165,8 +168,9 @@ const handleSelect = (key, keyPath) => {
   border-bottom: none !important;
 }
 
-/* 自定义hover效果，只在非选中状态下显示 */
-.nav-item:not(.is-active)::after {
+/* 自定义hover效果，添加给所有菜单项 */
+.el-menu-item::after,
+.el-sub-menu::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -178,7 +182,8 @@ const handleSelect = (key, keyPath) => {
   transform: translateX(-50%);
 }
 
-.nav-item:not(.is-active):hover::after {
+.el-menu-item:hover::after,
+.el-sub-menu:hover::after {
   width: 70%;
 }
 
@@ -190,15 +195,9 @@ const handleSelect = (key, keyPath) => {
 }
 
 /* 为选中项添加底部边框 */
-.el-menu :deep(.el-menu-item.is-active)::before,
-.el-menu :deep(.el-sub-menu.is-active)::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 15%;
+.el-menu :deep(.el-menu-item.is-active)::after,
+.el-menu :deep(.el-sub-menu.is-active)::after {
   width: 70%;
-  height: 2px;
-  background-color: #409EFF;
 }
 
 .search-container {
@@ -214,16 +213,25 @@ const handleSelect = (key, keyPath) => {
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   width: 30vw;
+  display: flex;
+  align-items: center;
 }
 
 .search-wrapper:hover {
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+.search-icon-prefix {
+  color: #909399;
+  font-size: 18px;
+  margin-right: 8px;
+}
+
 .search-input {
   height: 40px;
   background-color: transparent;
   border: none;
+  flex: 1;
 }
 
 .search-input :deep(.el-input__wrapper) {
@@ -235,32 +243,6 @@ const handleSelect = (key, keyPath) => {
 
 .search-input :deep(.el-input__suffix) {
   right: 5px;
-}
-
-.search-button {
-  border: none;
-  background-color: #409EFF;
-  padding: 10px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  color: white;
-  margin-left: 10px;
-  height: 40px;
-  width: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.search-button:hover {
-  background-color: #66b1ff;
-  transform: scale(1.05);
-  box-shadow: 0 2px 12px rgba(64, 158, 255, 0.4);
-}
-
-.search-icon {
-  font-size: 1.2em;
-  font-weight: bold;
 }
 
 .main {
