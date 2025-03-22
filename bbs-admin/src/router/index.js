@@ -46,14 +46,6 @@ const router = createRouter({
             title: "帖子管理",
           },
         },
-        {
-          path: "/test",
-          name: "test",
-          component: () => import("../views/test.vue"),
-          meta: {
-            title: "测试首页",
-          },
-        },
       ],
     },
   ],

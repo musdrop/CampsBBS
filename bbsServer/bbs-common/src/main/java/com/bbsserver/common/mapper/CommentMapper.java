@@ -9,18 +9,4 @@ import java.util.List;
 
 @Mapper
 public interface CommentMapper extends BaseMapper<bbsComment> {
-
-    @Select("select * from BBS_COMMENT where forum_id = #{forumId}")
-    @Results({
-            @Result(property = "id", column = "id"),
-            @Result(property = "userId", column = "user_id"),
-            @Result(property = "content", column = "content"),
-            @Result(property = "createTime", column = "create_time"),
-            @Result(property = "authorName", column = "user_id",javaType = String.class,
-                    one = @One(select = "com.bbsserver.common.mapper.UserMapper.selectNameById")),
-            @Result(property = "authorAccount", column = "user_id",javaType = String.class,
-                    one = @One(select = "com.bbsserver.common.mapper.UserMapper.selectAccountById"))
-
-    })
-    List<CommentVo> commentAndUserList(int forumId);
 }

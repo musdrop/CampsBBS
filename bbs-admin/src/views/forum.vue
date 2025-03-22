@@ -144,7 +144,7 @@ const handleComment = async (idx, rowData) => {
   let forumId = rowData.id
   let result = await proxy.axios.get('comment/list?forumId=' + forumId)
   console.log(result);
-  commentData.value = result
+  commentData.value = result;
   commentDialog.value = true
 }
 

@@ -165,6 +165,12 @@ asideInit();
 	background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
 	opacity: 0;
 	transition: opacity 0.5s ease;
+	overflow-x: hidden;
+	/* 防止水平溢出 */
+	width: 100%;
+	/* 确保宽度不超过视口 */
+	position: relative;
+	/* 使内部定位更加可控 */
 }
 
 .common-layout.animate-in {
@@ -220,6 +226,9 @@ asideInit();
 .main-container {
 	position: relative;
 	margin-top: 60px;
+	width: 100%;
+	overflow-x: hidden;
+	/* 防止水平溢出 */
 }
 
 .aside-menu {
@@ -277,6 +286,10 @@ asideInit();
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 	min-height: calc(100vh - 130px);
 	box-sizing: border-box;
+	max-width: 100%;
+	/* 确保不会超出父容器 */
+	overflow-x: hidden;
+	/* 防止水平溢出 */
 }
 
 /* 页面切换动画 */
