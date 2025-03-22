@@ -28,6 +28,15 @@ public class bbsForum {
 
     private String content;
 
+    // 浏览量
+    private Integer viewCount = 0;
+    
+    // 点赞数
+    private Integer likeCount = 0;
+    
+    // 评论数
+    private Integer commentCount = 0;
+    
     //为0时正常，为1时被删除
     private int deleteFlag=0;
 
@@ -36,4 +45,8 @@ public class bbsForum {
 
     @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
     private Date updateTime;
+    
+    // 前端展示时判断当前用户是否点赞，不保存到数据库
+    @TableField(exist = false)
+    private Boolean isLiked = false;
 }

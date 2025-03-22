@@ -40,7 +40,8 @@ public class ForumService {
     }
 
     public List<List<ForumVo>> list(){
-        return ListUtil.partition(forumMapper.forumAndUserList(),4);
+        //return ListUtil.partition(forumMapper.forumAndUserList(),4);
+        return null;
     }
 
     public void delete(int id) {

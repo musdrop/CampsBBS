@@ -1,6 +1,6 @@
 <template>
 	<div class="home-container">
-		<el-scrollbar height="95vh" class="main-scrollbar">
+		<el-scrollbar height="95vh" class="main-scrollbar" ref="mainScrollRef">
 			<!-- 瀑布流布局展示帖子 -->
 			<div class="masonry-container">
 				<el-row :gutter="20">
@@ -55,7 +55,7 @@
 									</div>
 									<div class="interaction-item">
 										<el-icon>
-											<Star />
+											<Top />
 										</el-icon>
 										<span>{{ forum.likeCount || 0 }}</span>
 									</div>
@@ -72,11 +72,10 @@
 					</el-col>
 				</el-row>
 
-				<!-- 加载更多占位 -->
-				<div class="load-more" v-if="forumList.length > 0">
+				<!-- 加载状态显示 -->
+				<div class="load-more" v-if="forumList.length > 0" ref="loadMoreRef">
 					<el-skeleton :rows="1" animated v-if="loading" />
-					<el-button v-else-if="hasMore" @click="loadMore" text>加载更多</el-button>
-					<div v-else class="no-more">已经到底啦 ~</div>
+					<div v-else-if="!hasMore" class="no-more">已经到底啦 ~</div>
 				</div>
 
 				<!-- 无数据时显示 -->
@@ -95,10 +94,10 @@
 </template>
 
 <script setup>
-import { getCurrentInstance, reactive, ref, watch, onMounted } from "vue";
+import { getCurrentInstance, reactive, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { imageBaseURL } from "../global/index.js";
 import {
-	Clock, ChatLineRound, View, Star
+	Clock, ChatLineRound, View, Top
 } from '@element-plus/icons-vue';
 import ForumDetail from '../components/forum/ForumDetail.vue';
 
@@ -128,6 +127,12 @@ const initLoading = ref(true);
 
 // 选中的帖子ID（用于详情组件）
 const selectedForumId = ref(null);
+
+const mainScrollRef = ref(null);
+const loadMoreRef = ref(null);
+
+// 使用Intersection Observer实现滚动加载
+let observer = null;
 
 // 初始化帖子列表
 const forumInit = async () => {
@@ -180,7 +185,55 @@ watch(() => props.searchQuery, (newVal) => {
 // 首次加载
 onMounted(() => {
 	forumInit();
+	setupIntersectionObserver();
 });
+
+onBeforeUnmount(() => {
+	if (observer) {
+		observer.disconnect();
+	}
+});
+
+// 设置交叉观察器来监控加载更多元素
+const setupIntersectionObserver = () => {
+	// 如果浏览器支持IntersectionObserver
+	if ('IntersectionObserver' in window) {
+		observer = new IntersectionObserver((entries) => {
+			const entry = entries[0];
+			if (entry.isIntersecting && !loading.value && hasMore.value && !initLoading.value) {
+				loadMore();
+			}
+		}, {
+			root: null, // 默认是视口
+			rootMargin: '0px',
+			threshold: 0.1 // 当目标元素的10%进入视口时触发
+		});
+
+		// 等待DOM更新后再观察元素
+		setTimeout(() => {
+			if (loadMoreRef.value) {
+				observer.observe(loadMoreRef.value);
+			}
+		}, 100);
+	} else {
+		// 对于不支持IntersectionObserver的浏览器，使用传统的滚动事件
+		if (mainScrollRef.value) {
+			mainScrollRef.value.wrap.addEventListener('scroll', handleScrollLegacy);
+		}
+	}
+};
+
+// 传统滚动事件处理（备用方案）
+const handleScrollLegacy = () => {
+	if (!mainScrollRef.value || loading.value || !hasMore.value || initLoading.value) return;
+
+	const scrollElement = mainScrollRef.value.wrap;
+	const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+
+	if (scrollHeight - scrollTop - clientHeight < 100) {
+		loadMore();
+	}
+};
 
 // 加载更多
 const loadMore = () => {
@@ -245,6 +298,15 @@ const handleForumUpdate = (data) => {
 		};
 	}
 };
+
+// 当数据加载状态改变时，可能需要重新设置观察器
+watch([loading, hasMore], () => {
+	if (!loading.value && observer && loadMoreRef.value) {
+		// 确保观察器正在观察最新的加载更多元素
+		observer.disconnect();
+		observer.observe(loadMoreRef.value);
+	}
+});
 </script>
 
 <style scoped>
@@ -418,6 +480,10 @@ main-scrollbar:hover :deep(.el-scrollbar__bar) {
 	margin-top: 16px;
 	margin-bottom: 32px;
 	color: #909399;
+	height: 60px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .no-more {

@@ -2,6 +2,7 @@ package com.bbsserver.common.vo;
 
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 public class LoginVo {
@@ -36,10 +37,10 @@ public class LoginVo {
     /**
      * 创建时间
      */
-    private LocalDateTime createTime;
+    private Date createTime;
 
     /**
      * 修改时间
      */
-    private LocalDateTime updateTime;
+    private Date updateTime;
 }

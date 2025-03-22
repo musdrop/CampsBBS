@@ -21,8 +21,15 @@ public class CommentController {
     }
 
     @GetMapping("/list")
-    public DataResult list(@RequestParam("forumId") Integer forumId) {
-        return DataResult.success(commentService.list(forumId));
+    public DataResult list(
+            @RequestParam("forumId") Integer forumId,
+            @RequestParam(value = "pageNum", required = false) Integer pageNum,
+            @RequestParam(value = "pageSize", required = false) Integer pageSize) {
+        return DataResult.success(commentService.list(forumId, pageNum, pageSize));
     }
-
+    
+    @PostMapping("/like")
+    public DataResult like(@RequestParam("commentId") Integer commentId) {
+        return DataResult.success(commentService.likeComment(commentId));
+    }
 }
