@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home-container">
     <el-scrollbar height="85vh">
       <!--帖子每行-->
       <el-row :gutter="24" v-for="list in forumList" :key="list">
@@ -8,25 +8,19 @@
           <!--帖子卡片-->
           <el-card shadow="hover" class="box-card" @click="handleDetail(forum)">
             <!--封面图片-->
-            <el-image
-              :src="imageBaseURL + forum.coverImage"
-              style="height: 100px"
-              fit="fill"
-            />
+            <el-image :src="imageBaseURL + forum.coverImage" style="height: 100px" fit="fill" />
             <!--帖子信息-->
             <div class="line"></div>
             <div style="padding: 0px">
               <!--标题-->
-              <h1
-                style="
+              <h1 style="
                   background-color: #e6e6e6;
                   font-size: 20px;
                   width: 100%;
                   white-space: nowrap;
                   overflow: hidden;
                   text-overflow: ellipsis;
-                "
-              >
+                ">
                 {{ forum.title }}
               </h1>
               <div class="short-line"></div>
@@ -42,33 +36,21 @@
     </el-scrollbar>
   </div>
 
-  <el-dialog
-    v-model="detailDialog"
-    :title="detailForm.title"
-    width="80%"
-    style="height: 600px"
-    append-to-body
-  >
+  <el-dialog v-model="detailDialog" :title="detailForm.title" width="80%" style="height: 600px" append-to-body>
     <!--帖子详情-->
     <div style="width: 48%; float: left; height: 500px">
       <!--帖子封面-->
-      <el-image
-        style="height: 250px"
-        :src="imageBaseURL + detailForm.coverImage"
-        fit="fill"
-        :preview-src-list="[imageBaseURL + detailForm.coverImage]"
-      />
+      <el-image style="height: 250px" :src="imageBaseURL + detailForm.coverImage" fit="fill"
+        :preview-src-list="[imageBaseURL + detailForm.coverImage]" />
       <div class="line"></div>
       <!--帖子内容-->
-      <div
-        style="
+      <div style="
           text-indent: 2em;
           word-break: break-all;
           max-height: 200px;
           height: 200px;
           overflow-y: auto;
-        "
-      >
+        ">
         {{ detailForm.content }}
       </div>
     </div>
@@ -93,7 +75,7 @@
 </template>
 
 <script setup>
-import { getCurrentInstance, reactive, ref } from "vue";
+import { getCurrentInstance, reactive, ref, onMounted } from "vue";
 import { imageBaseURL } from "../global/index.js";
 import { useRouter } from "vue-router";
 
@@ -102,17 +84,38 @@ const { proxy } = getCurrentInstance();
 let forumList = ref([]);
 //初始化帖子列表
 const forumInit = async () => {
+  console.log("Home页面初始化，当前路径:", proxy.router.currentRoute.value.path);
   let param = {};
   param.pageSize = -1;
-  let result = await proxy.axios.post("forum/list", param);
-  if (!result) {
-    proxy.msg.error("查询帖子失败");
-    return;
+  try {
+    let result = await proxy.axios.post("forum/list", param);
+    if (!result) {
+      proxy.msg.error("查询帖子失败");
+      return;
+    }
+    console.log("获取帖子数据成功:", result);
+    forumList.value = result;
+  } catch (error) {
+    console.error("查询帖子失败:", error);
+    proxy.msg.error("查询帖子出错: " + error.message);
   }
-  console.log(result);
-  forumList.value = result;
 };
-forumInit();
+
+// 使用onActivated钩子，确保每次组件激活时都刷新数据
+import { onActivated } from "vue";
+onActivated(() => {
+  console.log("Home组件被激活");
+  forumInit();
+});
+
+// 组件挂载后确保数据加载
+onMounted(() => {
+  console.log("Home组件挂载完成");
+  // 确保在DOM更新后执行
+  setTimeout(() => {
+    forumInit();
+  }, 0);
+});
 
 //帖子详情对话框开关
 let detailDialog = ref(false);
@@ -139,14 +142,15 @@ const commentInit = async (forumId) => {
 };
 </script>
 
-<style>
-.home {
-  position: relative;
-  left: 40px;
+<style scoped>
+.home-container {
+  width: 100%;
+  height: 100%;
 }
 
 .box-card {
   height: 300px;
+  margin-bottom: 20px;
 }
 
 .line {

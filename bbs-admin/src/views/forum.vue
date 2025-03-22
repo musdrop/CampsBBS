@@ -1,6 +1,6 @@
 <template>
-  <div class="forum">
-    <div>
+  <div class="forum-container">
+    <div class="query-form">
       <el-form :model="queryForm" label-width="60px" :inline="true">
         <el-form-item label="标题">
           <el-input v-model="queryForm.title" clearable style="width:300px" />
@@ -11,7 +11,7 @@
       </el-form>
     </div>
 
-    <div style="margin-top: 1%;">
+    <div class="table-container">
       <el-table :data="tableData" style="width: 100%;" stripe border highlight-current-row size="large">
         <el-table-column align="center" prop="title" label="标题" />
         <el-table-column align="center" prop="content" label="内容" />
@@ -25,8 +25,8 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination background layout="total, sizes, prev, pager, next" style="margin-top: 2%;"
-        :page-sizes="[10, 20, 50]" @size-change="init" @current-change="init" v-model:page-size="queryForm.pageSize"
+      <el-pagination background layout="total, sizes, prev, pager, next" class="pagination" :page-sizes="[10, 20, 50]"
+        @size-change="init" @current-change="init" v-model:page-size="queryForm.pageSize"
         v-model:current-page="queryForm.page" :total="totalData" />
     </div>
 
@@ -72,11 +72,10 @@
       </el-table>
     </el-dialog>
   </div>
-
 </template>
 
 <script setup>
-import { getCurrentInstance, reactive, ref } from "vue"
+import { getCurrentInstance, reactive, ref, onMounted, onActivated } from "vue"
 import { imageBaseURL } from "../global/index.js"
 const { proxy } = getCurrentInstance()
 
@@ -92,15 +91,35 @@ const formLabelWidth = ref(80);
 
 let tableData = ref([]);
 const init = async () => {
+  console.log("Forum页面初始化，当前路径:", proxy.router.currentRoute.value.path);
   let params = Object.assign({}, queryForm);
-  let result = await proxy.axios.post('forum/list', params)
-  if (!result) {
-    return;
+  try {
+    let result = await proxy.axios.post('forum/list', params)
+    if (!result) {
+      return;
+    }
+    console.log("获取帖子管理数据成功:", result);
+    tableData.value = result.list;
+    totalData.value = result.total;
+  } catch (error) {
+    console.error("查询帖子失败:", error);
   }
-  tableData.value = result.list;
-  totalData.value = result.total;
 }
-init();
+
+// 使用onActivated钩子，确保每次组件激活时都刷新数据
+onActivated(() => {
+  console.log("Forum组件被激活");
+  init();
+});
+
+// 组件挂载后确保数据加载
+onMounted(() => {
+  console.log("Forum组件挂载完成");
+  // 确保在DOM更新后执行
+  setTimeout(() => {
+    init();
+  }, 0);
+});
 
 const handleDetail = async (idx, rowData) => {
   let result = await proxy.axios.get('user/detail?id=' + rowData.authorId)
@@ -140,10 +159,23 @@ const DeleteComment = async (idx, rowData) => {
 
 </script>
 
-<style>
-.forum {
-  position: relative;
-  left: 8vw;
-  width: 70vw;
+<style scoped>
+.forum-container {
+  width: 100%;
+  height: 100%;
+}
+
+.query-form {
+  margin-bottom: 20px;
+}
+
+.table-container {
+  margin-top: 20px;
+}
+
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

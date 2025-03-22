@@ -1,6 +1,6 @@
 <template>
-  <div class="user">
-    <div>
+  <div class="user-container">
+    <div class="query-form">
       <el-form :model="queryForm" label-width="60px" :inline="true">
         <el-form-item label="账号">
           <el-input v-model="queryForm.account" clearable style="width:300px" />
@@ -11,7 +11,7 @@
       </el-form>
     </div>
 
-    <div style="margin-top: 1%;">
+    <div class="table-container">
       <el-table :data="tableData" style="width: 100%;" max-height="500" stripe border highlight-current-row
         size="large">
         <el-table-column align="center" prop="account" label="账号" />
@@ -27,8 +27,8 @@
         </el-table-column>
       </el-table>
       <!--分页查询，绑定了queryForm的当前页page和每页大小pageSize-->
-      <el-pagination background layout="total, sizes, prev, pager, next" style="margin-top: 2%;"
-        :page-sizes="[10, 20, 50]" @size-change="init" @current-change="init" v-model:page-size="queryForm.pageSize"
+      <el-pagination background layout="total, sizes, prev, pager, next" class="pagination" :page-sizes="[10, 20, 50]"
+        @size-change="init" @current-change="init" v-model:page-size="queryForm.pageSize"
         v-model:current-page="queryForm.page" :total="totalData" />
     </div>
 
@@ -56,11 +56,10 @@
       </el-form>
     </el-dialog>
   </div>
-
 </template>
 
 <script setup>
-import { getCurrentInstance, reactive, ref } from "vue";
+import { getCurrentInstance, reactive, ref, onMounted, onActivated } from "vue";
 import { useRouter } from "vue-router";
 import { imageBaseURL } from "../global/index.js"
 const { proxy } = getCurrentInstance()
@@ -81,20 +80,39 @@ const formLabelWidth = ref(80);
 let tableData = ref([]);
 //用户数据展示初始化/查询
 const init = async () => {
+  console.log("User页面初始化，当前路径:", proxy.router.currentRoute.value.path);
   //设置查询参数
   let params = Object.assign({}, queryForm);
   //查询
-  let result = await proxy.axios.post('user/list', params)
-  if (!result) {
-    return;
+  try {
+    let result = await proxy.axios.post('user/list', params)
+    if (!result) {
+      return;
+    }
+    console.log("获取用户数据成功:", result);
+    //设置数据到表格
+    tableData.value = result.list;
+    //设置数据总数
+    totalData.value = result.total;
+  } catch (error) {
+    console.error("查询用户失败:", error);
   }
-  //设置数据到表格
-  tableData.value = result.list;
-  //设置数据总数
-  totalData.value = result.total;
-  console.log(totalData.value);
 }
-init();
+
+// 使用onActivated钩子，确保每次组件激活时都刷新数据
+onActivated(() => {
+  console.log("User组件被激活");
+  init();
+});
+
+// 组件挂载后确保数据加载
+onMounted(() => {
+  console.log("User组件挂载完成");
+  // 确保在DOM更新后执行
+  setTimeout(() => {
+    init();
+  }, 0);
+});
 
 //用户详细信息框
 const handleDetail = (idx, rowData) => {
@@ -110,14 +128,25 @@ const handleDelete = async (idx, rowData) => {
   proxy.msg.success('删除成功')
   init()
 }
-
-
 </script>
 
-<style>
-.user {
-  position: relative;
-  left: 8vw;
-  width: 70vw;
+<style scoped>
+.user-container {
+  width: 100%;
+  height: 100%;
+}
+
+.query-form {
+  margin-bottom: 20px;
+}
+
+.table-container {
+  margin-top: 20px;
+}
+
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
