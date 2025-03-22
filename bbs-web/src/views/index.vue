@@ -250,7 +250,7 @@ const handleSelect = (key, keyPath) => {
   width: 100vw;
   top: 60px;
   left: 0;
-  padding: 20px;
+  padding: 0px;
   background-color: #f5f5f5;
 }
 </style>
