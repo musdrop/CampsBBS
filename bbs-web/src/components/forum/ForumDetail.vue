@@ -213,10 +213,15 @@ const loadComments = async (forumId) => {
         const newComments = result.list || [];
         totalComments.value = result.total || 0;
 
+        // 不再处理嵌套结构，直接按时间排序
+        const sortedComments = [...newComments].sort((a, b) =>
+            new Date(b.createTime) - new Date(a.createTime)
+        );
+
         if (commentPage.value === 1) {
-            commentList.value = newComments;
+            commentList.value = sortedComments;
         } else {
-            commentList.value = [...commentList.value, ...newComments];
+            commentList.value = [...commentList.value, ...sortedComments];
         }
 
         hasMoreComments.value = commentList.value.length < totalComments.value;
@@ -253,7 +258,15 @@ const handleCommentLike = async (comment) => {
 
 // 处理回复
 const handleReply = (comment) => {
-    replyTo.value = comment;
+    if (comment.parentComment) {
+        // 如果是回复内的回复，需要记录对应的一级评论
+        replyTo.value = {
+            ...comment,
+            rootCommentId: comment.parentComment.id
+        };
+    } else {
+        replyTo.value = comment;
+    }
 };
 
 // 取消回复

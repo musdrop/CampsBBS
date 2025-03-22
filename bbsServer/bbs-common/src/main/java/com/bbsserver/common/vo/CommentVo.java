@@ -27,8 +27,11 @@ public class CommentVo {
     
     private Boolean isLiked = false;
     
-    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
+    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT,timezone = "GMT+8")
     private Date createTime;
-    
+
+    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT,timezone = "GMT+8")
+    private Date updateTime;
+
     private List<CommentVo> replies;
 }

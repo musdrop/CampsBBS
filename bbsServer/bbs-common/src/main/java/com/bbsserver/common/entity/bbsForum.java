@@ -40,10 +40,10 @@ public class bbsForum {
     //为0时正常，为1时被删除
     private int deleteFlag=0;
 
-    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
+    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT,timezone = "GMT+8")
     private Date createTime;
 
-    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
+    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT,timezone = "GMT+8")
     private Date updateTime;
     
     // 前端展示时判断当前用户是否点赞，不保存到数据库

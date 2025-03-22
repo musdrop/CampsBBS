@@ -29,8 +29,8 @@ public class ForumVo {
 
     private String content;
 
-    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
+    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT,timezone = "GMT+8")
     private Date createTime;
-    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
+    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT,timezone = "GMT+8")
     private Date updateTime;
 }

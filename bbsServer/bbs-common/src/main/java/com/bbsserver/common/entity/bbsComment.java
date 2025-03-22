@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.TimeZone;
 
 @Data
 public class bbsComment {
@@ -24,7 +25,7 @@ public class bbsComment {
     @TableField(exist = false)
     private String authorAvatar;
     
-    private Integer parentId;
+    private Integer parentId = 0;
     
     private String content;
     
@@ -32,9 +33,9 @@ public class bbsComment {
     
     private Integer deleteFlag = 0;
     
-    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
+    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT,timezone = "GMT+8")
     private Date createTime;
     
-    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
+    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT,timezone = "GMT+8")
     private Date updateTime;
 }

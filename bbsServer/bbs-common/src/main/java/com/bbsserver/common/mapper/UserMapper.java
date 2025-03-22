@@ -12,4 +12,7 @@ public interface UserMapper extends BaseMapper<bbsUser> {
 
     @Select("select account from BBS_USER where id = #{id}")
     String selectAccountById(int id);
+
+    @Select("select head from BBS_USER where id = #{id}")
+    String selectHeadById(int id);
 }

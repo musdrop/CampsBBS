@@ -27,9 +27,9 @@ public class bbsLike {
     // 点赞状态：1-已点赞，0-取消点赞
     private Integer status = 1;
     
-    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
+    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT,timezone = "GMT+8")
     private Date createTime;
     
-    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT)
+    @JsonFormat(pattern = CommonConstant.DATE_TIME_FORMAT,timezone = "GMT+8")
     private Date updateTime;
 }

@@ -9,6 +9,7 @@ import com.bbsserver.common.exception.CommonException;
 import com.bbsserver.common.mapper.CommentMapper;
 import com.bbsserver.common.mapper.ForumMapper;
 import com.bbsserver.common.mapper.LikeMapper;
+import com.bbsserver.common.mapper.UserMapper;
 import com.bbsserver.common.utils.SessionManager;
 import com.bbsserver.common.vo.CommentVo;
 import com.bbsserver.dto.CommentSaveDTO;
@@ -36,7 +37,9 @@ public class CommentService {
     
     @Autowired
     private LikeMapper likeMapper;
-    
+    @Autowired
+    private UserMapper userMapper;
+
     @Transactional
     public void save(CommentSaveDTO commentSaveDTO) {
         // 验证参数
@@ -94,7 +97,7 @@ public class CommentService {
         QueryWrapper<bbsComment> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("forum_id", forumId);
         queryWrapper.eq("delete_flag", 0); // 只查询未删除的评论
-        queryWrapper.isNull("parent_id"); // 只查询顶级评论
+        queryWrapper.eq("parent_id",0); // 只查询顶级评论
         queryWrapper.orderByDesc("create_time"); // 按创建时间倒序排序
         
         // 使用MyBatis-Plus的分页功能
@@ -118,8 +121,8 @@ public class CommentService {
             BeanUtils.copyProperties(comment, commentVo);
             
             // 这里可以添加额外的逻辑，如设置作者信息等
-            // commentVo.setAuthorName(getUserName(comment.getUserId()));
-            
+            commentVo.setAuthorName(userMapper.selectNameById(comment.getUserId()));
+            commentVo.setAuthorAvatar(userMapper.selectHeadById(comment.getUserId()));
             // 检查当前用户是否点赞过该评论
             if (currentUserId != null) {
                 int liked = likeMapper.checkUserLike(2, comment.getId(), currentUserId);
@@ -156,7 +159,9 @@ public class CommentService {
             BeanUtils.copyProperties(reply, replyVo);
             
             // 这里可以添加额外的逻辑，如设置作者信息等
-            // replyVo.setAuthorName(getUserName(reply.getUserId()));
+            replyVo.setAuthorName(userMapper.selectNameById(reply.getUserId()));
+            // 递归查询回复的回复
+            replyVo.setReplies(getCommentReplies(reply.getId(), currentUserId));
             
             // 检查当前用户是否点赞过该回复
             if (currentUserId != null) {

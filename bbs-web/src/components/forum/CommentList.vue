@@ -37,7 +37,7 @@
 
                         <!-- 评论内容 -->
                         <div class="comment-content">
-                            <div v-if="comment.parentAuthorName" class="parent-info">
+                            <div v-if="comment.parentAuthorName && !comment.replies" class="parent-info">
                                 回复 <span class="parent-name">@{{ comment.parentAuthorName }}</span>:
                             </div>
                             {{ comment.content }}
@@ -59,6 +59,75 @@
                                     <Star />
                                 </el-icon>
                                 <span>{{ comment.likeCount || 0 }}</span>
+                            </div>
+
+                            <!-- 调试信息，显示是否有回复 -->
+                            <div v-if="comment.hasReplies" class="debug-info">
+                                有{{ comment.replies.length }}条回复
+                            </div>
+                        </div>
+
+                        <!-- 嵌套回复区域 -->
+                        <div v-if="comment.replies && comment.replies.length > 0" class="reply-list">
+                            <div class="reply-header">
+                                <span>{{ comment.replies.length }}条回复</span>
+                            </div>
+
+                            <!-- 回复列表 -->
+                            <div v-for="reply in displayReplies(comment)" :key="reply.id" class="reply-item">
+                                <el-avatar :size="30" :src="reply.authorAvatar" class="reply-avatar">
+                                    {{ reply.authorName ? reply.authorName.substring(0, 1).toUpperCase() : 'U' }}
+                                </el-avatar>
+
+                                <div class="reply-content-wrapper">
+                                    <div class="reply-author">
+                                        <span class="author-name">{{ reply.authorName }}</span>
+                                        <span class="reply-time">{{ formatTime(reply.createTime) }}</span>
+                                    </div>
+
+                                    <div class="reply-content">
+                                        <span v-if="reply.parentAuthorName" class="reply-to">
+                                            回复 <span class="parent-name">@{{ reply.parentAuthorName }}</span>:
+                                        </span>
+                                        {{ reply.content }}
+                                    </div>
+
+                                    <div class="reply-actions">
+                                        <div class="action-item reply-btn" @click="replyComment(reply, comment)">
+                                            <el-icon>
+                                                <ChatLineRound />
+                                            </el-icon> 回复
+                                        </div>
+                                        <div class="action-item like-btn" :class="{ 'liked': reply.isLiked }"
+                                            @click="likeComment(reply)">
+                                            <el-icon v-if="reply.isLiked">
+                                                <StarFilled />
+                                            </el-icon>
+                                            <el-icon v-else>
+                                                <Star />
+                                            </el-icon>
+                                            <span>{{ reply.likeCount || 0 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 展开更多回复 -->
+                            <div v-if="comment.replies.length > 3 && !expandedComments[comment.id]"
+                                class="expand-replies" @click="expandReplies(comment.id)">
+                                <el-icon>
+                                    <ArrowDown />
+                                </el-icon>
+                                展开全部{{ comment.replies.length }}条回复
+                            </div>
+
+                            <!-- 收起回复 -->
+                            <div v-if="comment.replies.length > 3 && expandedComments[comment.id]"
+                                class="collapse-replies" @click="collapseReplies(comment.id)">
+                                <el-icon>
+                                    <ArrowUp />
+                                </el-icon>
+                                收起回复
                             </div>
                         </div>
                     </div>
@@ -87,8 +156,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { ChatLineRound, Star, StarFilled, Close } from '@element-plus/icons-vue';
+import { ref, reactive, onMounted, watch } from 'vue';
+import { ChatLineRound, Star, StarFilled, Close, ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 
 const props = defineProps({
     commentList: {
@@ -120,6 +189,20 @@ const props = defineProps({
 const emit = defineEmits(['load-more', 'like-comment', 'reply-comment', 'send-comment', 'cancel-reply']);
 
 const commentContent = ref('');
+const expandedComments = reactive({});
+
+// 当评论列表更新时，打印出调试信息
+watch(() => props.commentList, (newVal) => {
+    if (newVal && newVal.length > 0) {
+        console.log('CommentList组件收到的评论列表:', JSON.stringify(newVal));
+        // 检查是否有带replies的评论
+        const commentsWithReplies = newVal.filter(comment => comment.replies && comment.replies.length > 0);
+        console.log('带有回复的评论数量:', commentsWithReplies.length);
+        commentsWithReplies.forEach(comment => {
+            console.log(`评论ID ${comment.id} 有 ${comment.replies.length} 条回复`);
+        });
+    }
+}, { immediate: true, deep: true });
 
 // 加载更多评论
 const loadMore = () => {
@@ -132,8 +215,16 @@ const likeComment = (comment) => {
 };
 
 // 回复评论
-const replyComment = (comment) => {
-    emit('reply-comment', comment);
+const replyComment = (comment, parentComment = null) => {
+    // 如果有父评论，传递一个带有parent信息的对象
+    if (parentComment) {
+        emit('reply-comment', {
+            ...comment,
+            parentComment: parentComment
+        });
+    } else {
+        emit('reply-comment', comment);
+    }
 };
 
 // 取消回复
@@ -146,6 +237,26 @@ const sendComment = () => {
     if (!commentContent.value.trim()) return;
     emit('send-comment', commentContent.value);
     commentContent.value = '';
+};
+
+// 展开回复
+const expandReplies = (commentId) => {
+    expandedComments[commentId] = true;
+};
+
+// 收起回复
+const collapseReplies = (commentId) => {
+    expandedComments[commentId] = false;
+};
+
+// 展示回复（默认显示3条，展开后显示全部）
+const displayReplies = (comment) => {
+    if (!comment.replies) return [];
+    if (expandedComments[comment.id]) {
+        return comment.replies;
+    } else {
+        return comment.replies.slice(0, 3);
+    }
 };
 
 // 格式化时间
@@ -349,6 +460,110 @@ const formatTime = (time) => {
     color: #f56c6c;
 }
 
+/* 调试信息 */
+.debug-info {
+    font-size: 12px;
+    color: #E6A23C;
+    background-color: #fdf6ec;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+/* 嵌套回复样式 */
+.reply-list {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #f9fafc;
+    border-radius: 8px;
+    border-left: 3px solid #409EFF;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+}
+
+.reply-header {
+    font-size: 14px;
+    font-weight: 500;
+    color: #606266;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #ebeef5;
+}
+
+.reply-item {
+    display: flex;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    transition: all 0.3s;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.reply-item:hover {
+    background-color: #f0f2f5;
+}
+
+.reply-avatar {
+    margin-right: 10px;
+    flex-shrink: 0;
+    border: 1px solid #fff;
+}
+
+.reply-content-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.reply-author {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.reply-time {
+    font-size: 12px;
+    color: #909399;
+    margin-left: 6px;
+}
+
+.reply-content {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 6px;
+    word-break: break-word;
+}
+
+.reply-to {
+    font-size: 13px;
+    color: #606266;
+    margin-right: 4px;
+}
+
+.reply-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.expand-replies,
+.collapse-replies {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #409EFF;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 10px 0 5px;
+    margin-top: 5px;
+    transition: all 0.3s;
+    gap: 4px;
+    border-top: 1px dashed #ebeef5;
+}
+
+.expand-replies:hover,
+.collapse-replies:hover {
+    background-color: #ecf5ff;
+    border-radius: 6px;
+}
+
 .load-more-container {
     text-align: center;
     margin: 25px 0 15px;
@@ -389,6 +604,19 @@ const formatTime = (time) => {
 
     .comment-input-container {
         padding: 15px;
+    }
+
+    .reply-list {
+        padding: 10px;
+    }
+
+    .reply-item {
+        padding: 8px;
+    }
+
+    .reply-avatar {
+        width: 26px;
+        height: 26px;
     }
 }
 </style>
