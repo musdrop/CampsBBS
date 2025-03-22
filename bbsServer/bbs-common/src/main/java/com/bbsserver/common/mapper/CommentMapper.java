@@ -13,7 +13,7 @@ public interface CommentMapper extends BaseMapper<bbsComment> {
     @Select("select * from BBS_COMMENT where forum_id = #{forumId}")
     @Results({
             @Result(property = "id", column = "id"),
-            @Result(property = "authorId", column = "user_id"),
+            @Result(property = "userId", column = "user_id"),
             @Result(property = "content", column = "content"),
             @Result(property = "createTime", column = "create_time"),
             @Result(property = "authorName", column = "user_id",javaType = String.class,

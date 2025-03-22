@@ -34,4 +34,7 @@ public class CommentVo {
     private Date updateTime;
 
     private List<CommentVo> replies;
+
+    // 管理端专属
+    private String authorAccount;
 }

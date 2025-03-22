@@ -19,7 +19,7 @@ public class UserService {
 
     public PageVo<bbsUser> listUser(UserListDTO userListDTO) {
         //创建分页对象，包含当前需要的页和每页大小
-        Page<bbsUser> queryPage = new Page<>(userListDTO.getPage(), userListDTO.getPageSize());
+        Page<bbsUser> queryPage = new Page<>(userListDTO.getPageNum(), userListDTO.getPageSize());
         //创建查询条件
         QueryWrapper<bbsUser> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(userListDTO.getAccount())) {
