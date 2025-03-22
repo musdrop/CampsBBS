@@ -22,11 +22,25 @@
 
                     <!-- 评论区 -->
                     <comment-list :commentList="commentList" :loading="commentLoading" :hasMore="hasMoreComments"
-                        :totalComments="totalComments" :replyTo="replyTo" :sending="sending"
-                        @load-more="loadMoreComments" @like-comment="handleCommentLike" @reply-comment="handleReply"
-                        @send-comment="handleCommentSend" @cancel-reply="cancelReply" />
+                        :totalComments="totalComments" @load-more="loadMoreComments" @like-comment="handleCommentLike"
+                        @reply-comment="handleReply" />
                 </div>
             </el-scrollbar>
+
+            <!-- 底部固定评论栏 -->
+            <div class="fixed-comment-bar" :class="{ 'reply-mode': replyTo }">
+                <div class="reply-info" v-if="replyTo">
+                    <span>回复: {{ replyTo.authorName }}</span>
+                    <el-button type="text" @click="cancelReply">取消</el-button>
+                </div>
+                <div class="comment-input-wrapper">
+                    <el-input v-model="commentContent" placeholder="写下你的评论..." class="comment-input" :disabled="sending"
+                        @keyup.enter="handleCommentSend(commentContent)"></el-input>
+                    <el-button type="primary" :loading="sending" @click="handleCommentSend(commentContent)">
+                        发送
+                    </el-button>
+                </div>
+            </div>
         </div>
     </el-dialog>
 </template>
@@ -80,7 +94,7 @@ const hasMoreComments = ref(true);
 const commentLoading = ref(false);
 const totalComments = ref(0);
 const replyTo = ref(null);
-const content = ref("");
+const commentContent = ref("");
 const sending = ref(false);
 
 // 监听forumId变化，打开详情弹窗
@@ -127,7 +141,7 @@ const loadForumDetail = async (forumId) => {
             commentPage.value = 1;
             hasMoreComments.value = true;
             replyTo.value = null;
-            content.value = "";
+            commentContent.value = "";
 
             // 加载评论
             loadComments(forumId);
@@ -147,7 +161,7 @@ const loadForumDetail = async (forumId) => {
 // 关闭弹窗处理
 const handleDialogClose = () => {
     emit('update-forum', null);
-    content.value = "";
+    commentContent.value = "";
     replyTo.value = null;
 };
 
@@ -213,8 +227,53 @@ const loadComments = async (forumId) => {
         const newComments = result.list || [];
         totalComments.value = result.total || 0;
 
-        // 不再处理嵌套结构，直接按时间排序
-        const sortedComments = [...newComments].sort((a, b) =>
+        // 处理评论树结构，将所有嵌套回复放到二级结构中
+        const processComments = (comments) => {
+            // 遍历一级评论
+            comments.forEach(comment => {
+                // 递归处理所有嵌套回复，扁平化为两级结构
+                if (comment.replies && comment.replies.length > 0) {
+                    // 暂存原始的回复列表
+                    const originalReplies = [...comment.replies];
+                    // 清空回复列表，重新构建
+                    comment.replies = [];
+
+                    // 记录评论深度的递归函数，提取所有嵌套层级的回复
+                    const extractReplies = (replyList, depth = 1, parentInfo = null) => {
+                        replyList.forEach(reply => {
+                            // 只有二级以上的评论才需要标注回复对象
+                            if (depth > 1 && parentInfo) {
+                                reply.parentAuthorName = parentInfo.authorName;
+                            }
+
+                            // 将回复添加到一级评论的replies中
+                            comment.replies.push(reply);
+
+                            // 递归处理此回复的回复
+                            if (reply.replies && reply.replies.length > 0) {
+                                extractReplies(reply.replies, depth + 1, reply);
+                                // 处理完后删除原始嵌套结构，避免重复
+                                delete reply.replies;
+                            }
+                        });
+                    };
+
+                    // 开始提取嵌套回复，从深度1开始
+                    extractReplies(originalReplies);
+
+                    // 按时间顺序排序所有回复
+                    comment.replies.sort((a, b) => new Date(a.createTime) - new Date(b.createTime));
+                }
+            });
+
+            return comments;
+        };
+
+        // 处理评论树结构
+        const processedComments = processComments(newComments);
+
+        // 按时间排序一级评论
+        const sortedComments = [...processedComments].sort((a, b) =>
             new Date(b.createTime) - new Date(a.createTime)
         );
 
@@ -259,7 +318,7 @@ const handleCommentLike = async (comment) => {
 // 处理回复
 const handleReply = (comment) => {
     if (comment.parentComment) {
-        // 如果是回复内的回复，需要记录对应的一级评论
+        // 如果是回复内的回复，需要关联父评论信息以便前端展示
         replyTo.value = {
             ...comment,
             rootCommentId: comment.parentComment.id
@@ -293,6 +352,7 @@ const handleCommentSend = async (content) => {
         if (!result) return;
 
         replyTo.value = null;
+        commentContent.value = ""; // 清空评论内容
 
         // 无论是否有更多评论，都重置为第一页并重新加载
         commentPage.value = 1;
@@ -377,6 +437,8 @@ const handleCommentSend = async (content) => {
 .main-scrollbar {
     height: 100%;
     width: 100%;
+    padding-bottom: 70px;
+    /* 为底部评论栏留出空间 */
 }
 
 /* 帖子区域 */
@@ -424,6 +486,54 @@ const handleCommentSend = async (content) => {
     z-index: 2;
 }
 
+/* 底部固定评论栏样式 */
+.fixed-comment-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    padding: 12px 20px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    width: 90%;
+    max-width: 700px;
+    /* 与帖子区域的max-width一致 */
+    border-top: 1px solid #ebeef5;
+    border-radius: 8px 8px 0 0;
+}
+
+.reply-mode {
+    padding-top: 8px;
+}
+
+.reply-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    color: #606266;
+    font-size: 14px;
+}
+
+.comment-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.comment-input {
+    flex: 1;
+}
+
+:deep(.comment-input .el-input__inner) {
+    border-radius: 20px;
+    padding-left: 15px;
+}
+
 @media (max-width: 768px) {
     :deep(.forum-detail-dialog .el-dialog) {
         width: 95% !important;
@@ -436,6 +546,16 @@ const handleCommentSend = async (content) => {
         padding: 15px 20px 30px;
         border-radius: 0;
         box-shadow: none;
+    }
+
+    .fixed-comment-bar {
+        width: 95%;
+        padding: 10px 15px;
+        box-sizing: border-box;
+    }
+
+    .main-scrollbar {
+        padding-bottom: 60px;
     }
 }
 </style>

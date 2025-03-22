@@ -1,24 +1,5 @@
 <template>
     <div class="comment-section">
-        <!-- 评论输入框 -->
-        <div class="comment-input-container">
-            <div class="reply-info" v-if="replyTo">
-                回复 <span class="reply-name">@{{ replyTo.authorName }}</span>
-                <el-button type="text" size="small" @click="cancelReply" class="cancel-reply">
-                    <el-icon>
-                        <Close />
-                    </el-icon>
-                </el-button>
-            </div>
-            <el-input v-model="commentContent" type="textarea" :rows="2" resize="none" placeholder="写下你的评论..."
-                class="comment-textarea" />
-            <div class="comment-action">
-                <el-button type="primary" :loading="sending" @click="sendComment" class="send-button" round>
-                    发布评论
-                </el-button>
-            </div>
-        </div>
-
         <!-- 评论列表 -->
         <div class="comment-list-container">
             <template v-if="commentList.length > 0">
@@ -87,7 +68,7 @@
 
                                     <div class="reply-content">
                                         <span v-if="reply.parentAuthorName" class="reply-to">
-                                            回复 <span class="parent-name">@{{ reply.parentAuthorName }}</span>:
+                                            回复 <span class="parent-name">@{{ getReplyToName(reply) }}</span>:
                                         </span>
                                         {{ reply.content }}
                                     </div>
@@ -156,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { ChatLineRound, Star, StarFilled, Close, ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 
 const props = defineProps({
@@ -200,6 +181,11 @@ watch(() => props.commentList, (newVal) => {
         console.log('带有回复的评论数量:', commentsWithReplies.length);
         commentsWithReplies.forEach(comment => {
             console.log(`评论ID ${comment.id} 有 ${comment.replies.length} 条回复`);
+            // 检查回复中是否有三级或更高级别的评论
+            const nestedReplies = comment.replies.filter(reply => reply.parentId && reply.parentId !== comment.id);
+            if (nestedReplies.length > 0) {
+                console.log(`-- 其中有 ${nestedReplies.length} 条是三级或更高级别的回复`);
+            }
         });
     }
 }, { immediate: true, deep: true });
@@ -218,9 +204,11 @@ const likeComment = (comment) => {
 const replyComment = (comment, parentComment = null) => {
     // 如果有父评论，传递一个带有parent信息的对象
     if (parentComment) {
+        // 对于嵌套评论的处理
         emit('reply-comment', {
             ...comment,
-            parentComment: parentComment
+            parentComment: parentComment,
+            rootCommentId: parentComment.id // 记录根评论ID
         });
     } else {
         emit('reply-comment', comment);
@@ -286,6 +274,16 @@ const formatTime = (time) => {
     // 其他情况显示具体日期
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
+
+// 判断评论是否是二级或更高级别的评论(针对UI展示)
+const isNestedReply = (reply) => {
+    return reply.parentId && reply.rootParentId;
+};
+
+// 获取回复中应该展示的回复对象名称
+const getReplyToName = (reply) => {
+    return reply.parentAuthorName || '未知用户';
+};
 </script>
 
 <style scoped>
@@ -293,6 +291,13 @@ const formatTime = (time) => {
     width: 100%;
     display: flex;
     flex-direction: column;
+}
+
+/* 移除原评论输入区域的样式 */
+
+/* 评论列表 */
+.comment-list-container {
+    width: 100%;
 }
 
 /* 评论输入区域 */
@@ -535,6 +540,10 @@ const formatTime = (time) => {
     font-size: 13px;
     color: #606266;
     margin-right: 4px;
+    background-color: #f0f2f5;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
 }
 
 .reply-actions {
