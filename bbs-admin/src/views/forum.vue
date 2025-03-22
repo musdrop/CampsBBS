@@ -126,7 +126,7 @@
 
       <el-pagination background layout="total, sizes, prev, pager, next, jumper" class="pagination"
         :page-sizes="[10, 20, 50, 100]" @size-change="handleSizeChange" @current-change="handleCurrentChange"
-        v-model:page-size="queryForm.pageSize" v-model:current-page="queryForm.page" :total="totalData" />
+        v-model:page-size="queryForm.pageSize" v-model:current-page="queryForm.pageNum" :total="totalData" />
     </el-card>
 
     <!-- 使用新的组件 -->
@@ -156,7 +156,7 @@ const { proxy } = getCurrentInstance()
 
 const queryForm = reactive({
   title: '',
-  page: 1,
+  pageNum: 1,
   pageSize: 10
 })
 const totalData = ref(0)
@@ -206,7 +206,7 @@ onMounted(() => {
 
 const resetQuery = () => {
   queryForm.title = '';
-  queryForm.page = 1;
+  queryForm.pageNum = 1;
   init();
 }
 
@@ -216,7 +216,7 @@ const handleSizeChange = (size) => {
 }
 
 const handleCurrentChange = (page) => {
-  queryForm.page = page;
+  queryForm.pageNum = page;
   init();
 }
 

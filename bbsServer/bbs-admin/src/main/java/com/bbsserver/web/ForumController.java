@@ -4,7 +4,6 @@ package com.bbsserver.web;
 import com.bbsserver.common.vo.DataResult;
 import com.bbsserver.common.dto.ForumListDTO;
 import com.bbsserver.service.ForumAdminService;
-import com.bbsserver.service.ForumService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

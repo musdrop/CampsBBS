@@ -25,10 +25,13 @@ public class UserService {
         if (StringUtils.isNotBlank(userListDTO.getAccount())) {
             queryWrapper.like("account", userListDTO.getAccount());
         }
+        if (StringUtils.isNotBlank(userListDTO.getName())) {
+            queryWrapper.like("name", userListDTO.getName());
+        }
         //执行查询，返回分页对象，包含总页数和当前分页的数据
         IPage<bbsUser> page = userMapper.selectPage(queryPage, queryWrapper);
         //将分页对象转换为PageVo对象，返回
-        return new PageVo<>(page);
+        return new PageVo<bbsUser>(page);
     }
 
     public bbsUser getUser(int id) {

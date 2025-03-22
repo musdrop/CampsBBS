@@ -63,6 +63,7 @@ public class LoginService {
         //创建用户账号
         user = new bbsUser();
         BeanUtils.copyProperties(registerDTO, user);
+        user.setHead(registerDTO.getHeadPath());
         user.setAuth(0);
         user.setCreateTime(new Date());
         user.setUpdateTime(new Date());
