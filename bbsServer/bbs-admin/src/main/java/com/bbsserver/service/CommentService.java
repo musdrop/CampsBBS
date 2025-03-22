@@ -9,13 +9,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class CommentService {
+public class CommentAdminService extends CommentService {
     @Autowired
     private CommentMapper commentMapper;
-
-    public List<CommentVo> list(int forumid) {
-        return commentMapper.commentAndUserList(forumid);
-    }
 
     public void deleteComment(int id) {
         int count = commentMapper.deleteById(id);
