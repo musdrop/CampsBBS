@@ -47,7 +47,12 @@
               </el-icon>
               <span>{{ userInfo.name }}</span>
             </template>
-            <el-menu-item index="/logout">退出登录</el-menu-item>
+            <el-menu-item index="/logout">
+              <el-icon>
+                <SwitchButton />
+              </el-icon>
+              退出登录
+            </el-menu-item>
           </el-sub-menu>
         </el-menu>
       </el-header>
@@ -62,7 +67,7 @@
 <script setup>
 import { getCurrentInstance, reactive, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { HomeFilled, Edit, User, Setting, Search } from '@element-plus/icons-vue';
+import { HomeFilled, Edit, User, Setting, Search,SwitchButton } from '@element-plus/icons-vue';
 
 const { proxy } = getCurrentInstance();
 const route = useRoute();
