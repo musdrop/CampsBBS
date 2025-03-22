@@ -12,6 +12,7 @@ import com.bbsserver.common.mapper.LikeMapper;
 import com.bbsserver.common.mapper.UserMapper;
 import com.bbsserver.common.utils.SessionManager;
 import com.bbsserver.common.vo.CommentVo;
+import com.bbsserver.common.vo.PageVo;
 import com.bbsserver.dto.CommentSaveDTO;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
@@ -78,7 +79,7 @@ public class CommentService {
         forumMapper.updateById(forum);
     }
     
-    public Map<String, Object> list(Integer forumId, Integer pageNum, Integer pageSize) {
+    public PageVo<CommentVo> list(Integer forumId, Integer pageNum, Integer pageSize) {
         if (forumId == null) {
             throw new CommonException("帖子ID不能为空");
         }
@@ -134,14 +135,7 @@ public class CommentService {
             
             commentVoList.add(commentVo);
         }
-        
-        Map<String, Object> result = new HashMap<>();
-        result.put("list", commentVoList);
-        result.put("total", commentPage.getTotal());
-        result.put("pages", commentPage.getPages());
-        result.put("current", commentPage.getCurrent());
-        
-        return result;
+        return new PageVo<CommentVo>(commentPage.getCurrent(), commentPage.getPages(), commentPage.getTotal(), commentVoList);
     }
     
     // 获取评论的回复列表

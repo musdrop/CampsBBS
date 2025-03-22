@@ -10,6 +10,7 @@ import com.bbsserver.common.mapper.ForumMapper;
 import com.bbsserver.common.mapper.LikeMapper;
 import com.bbsserver.common.utils.SessionManager;
 import com.bbsserver.common.vo.ForumVo;
+import com.bbsserver.common.vo.PageVo;
 import com.bbsserver.dto.ForumSaveDTO;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
@@ -50,8 +51,7 @@ public class ForumService {
         forumMapper.insert(forum);
     }
 
-    public Map<String, Object> list(ForumListDTO listDTO) {
-        Map<String, Object> result = new HashMap<>();
+    public PageVo<ForumVo> list(ForumListDTO listDTO) {
         List<ForumVo> forumList = new ArrayList<>();
         
         // 确保分页参数有效
@@ -107,12 +107,7 @@ public class ForumService {
         }
         
         // 返回分页信息和列表数据
-        result.put("list", forumList);
-        result.put("total", forumPage.getTotal());
-        result.put("pages", forumPage.getPages());
-        result.put("current", forumPage.getCurrent());
-        
-        return result;
+        return new PageVo<ForumVo>(forumPage.getCurrent(), forumPage.getPages(), forumPage.getTotal(), forumList);
     }
 
     public void delete(int id){

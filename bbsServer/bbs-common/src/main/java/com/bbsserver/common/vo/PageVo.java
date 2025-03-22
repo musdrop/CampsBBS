@@ -3,16 +3,15 @@ package com.bbsserver.common.vo;
 import lombok.Data;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import lombok.Data;
 
 import java.util.List;
 
 @Data
 public class PageVo<T> {
 
-    private int page;
+    private int current;
 
-    private int pageSize;
+    private int pages;
 
     private int total;
 
@@ -22,18 +21,18 @@ public class PageVo<T> {
     public PageVo() {
     }
 
-    public PageVo(long page, long pageSize, long total, List<T> list) {
-        this.page = (int) page;
-        this.pageSize = (int) pageSize;
+    public PageVo(long current, long pages, long total, List<T> list) {
+        this.current = (int) current;
+        this.pages = (int) pages;
         this.total = (int) total;
         this.list = list;
     }
 
     public PageVo(IPage<T> page) {
         //当前页数
-        this.page = (int) page.getCurrent();
-        //每页大小
-        this.pageSize = (int) page.getSize();
+        this.current = (int) page.getCurrent();
+        //页数
+        this.pages = (int) page.getPages();
         //总数据数
         this.total = (int) page.getTotal();
         //当前页的数据

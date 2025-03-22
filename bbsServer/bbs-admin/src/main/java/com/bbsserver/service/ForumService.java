@@ -39,11 +39,6 @@ public class ForumService {
         return new PageVo<bbsForum>(page);
     }
 
-    public List<List<ForumVo>> list(){
-        //return ListUtil.partition(forumMapper.forumAndUserList(),4);
-        return null;
-    }
-
     public void delete(int id) {
         bbsForum forum = forumMapper.selectById(id);
         if(forum == null){

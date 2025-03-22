@@ -3,9 +3,6 @@ package com.bbsserver.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-
-
-
 @Data
 public class RegisterDTO {
 

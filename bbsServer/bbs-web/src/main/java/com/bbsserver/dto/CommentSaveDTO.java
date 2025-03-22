@@ -12,6 +12,6 @@ public class CommentSaveDTO {
     @NotBlank(message = "评论内容不能为空")
     private String content;
     
-    // 父评论ID，可以为null表示顶级评论
+    // 父评论ID，为0表示顶级评论
     private Integer parentId;
 }
