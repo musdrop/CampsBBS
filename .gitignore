@@ -15,8 +15,6 @@ gradle/wrapper/gradle-wrapper.jar
 .sts4-cache
 # eclipse ignore
 .settings/
-.project
-.classpath
 classes/
 ### IntelliJ IDEA ###
 .idea
