@@ -43,3 +43,6 @@ hs_err_pid*
 /nbdist/
 /.nb-gradle/
 # sass ignore
+
+# static
+**/resources/**
