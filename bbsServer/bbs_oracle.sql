@@ -1,101 +1,175 @@
--- Create sequences for auto-increment
-CREATE SEQUENCE comment_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE forum_seq START WITH 1 INCREMENT BY 1;
-CREATE SEQUENCE user_seq START WITH 1 INCREMENT BY 1;
+create sequence COMMENT_SEQ
+/
 
-CREATE SEQUENCE like_seq START WITH 1 INCREMENT BY 1;
-CREATE OR REPLACE TRIGGER like_id_trigger
-    BEFORE INSERT ON BBS_LIKE
-    FOR EACH ROW
-BEGIN
-    SELECT like_seq.NEXTVAL INTO :NEW.id FROM dual;
-END;
+create sequence FORUM_SEQ
+/
 
--- Comment table
-CREATE TABLE BBS_COMMENT (
-                         id          NUMBER PRIMARY KEY,
-                         forum_id    NUMBER NOT NULL,
-                         user_id     NUMBER NOT NULL,
-                         content     VARCHAR2(255) NOT NULL,
-                         create_time TIMESTAMP NOT NULL
-);
+create sequence USER_SEQ
+/
 
--- Add comment
-COMMENT ON TABLE BBS_COMMENT IS '评论';
-COMMENT ON COLUMN BBS_COMMENT.forum_id IS '所处的帖子id';
-COMMENT ON COLUMN BBS_COMMENT.user_id IS '发布评论的用户id';
-COMMENT ON COLUMN BBS_COMMENT.content IS '评论内容';
-COMMENT ON COLUMN BBS_COMMENT.create_time IS '创建时间';
+create sequence LIKE_SEQ
+/
 
--- Auto-increment trigger for comment
-CREATE OR REPLACE TRIGGER comment_id_trigger
-    BEFORE INSERT ON BBS_COMMENT
-    FOR EACH ROW
+create table BBS_COMMENT
+(
+    ID          NUMBER        not null
+        primary key,
+    FORUM_ID    NUMBER        not null,
+    USER_ID     NUMBER        not null,
+    CONTENT     VARCHAR2(255) not null,
+    CREATE_TIME TIMESTAMP(6)  not null,
+    PARENT_ID   NUMBER default 0,
+    DELETE_FLAG NUMBER default 0,
+    UPDATE_TIME TIMESTAMP(6),
+    LIKE_COUNT  NUMBER default 0
+)
+/
+
+comment on table BBS_COMMENT is '评论'
+/
+
+comment on column BBS_COMMENT.FORUM_ID is '所处的帖子id'
+/
+
+comment on column BBS_COMMENT.USER_ID is '发布评论的用户id'
+/
+
+comment on column BBS_COMMENT.CONTENT is '评论内容'
+/
+
+comment on column BBS_COMMENT.CREATE_TIME is '创建时间'
+/
+
+create trigger COMMENT_ID_TRIGGER
+    before insert
+    on BBS_COMMENT
+    for each row
 BEGIN
     SELECT comment_seq.NEXTVAL INTO :NEW.id FROM dual;
 END;
 /
 
--- Forum table
-CREATE TABLE BBS_FORUM (
-                       id          NUMBER PRIMARY KEY,
-                       title       VARCHAR2(255) NOT NULL,
-                       cover_image VARCHAR2(255) NOT NULL,
-                       user_id     NUMBER NOT NULL,
-                       content     VARCHAR2(1000),
-                       delete_flag NUMBER NOT NULL,
-                       create_time TIMESTAMP NOT NULL,
-                       update_time TIMESTAMP NOT NULL
-);
+create table BBS_FORUM
+(
+    ID            NUMBER        not null
+        primary key,
+    TITLE         VARCHAR2(255) not null,
+    COVER_IMAGE   VARCHAR2(255) not null,
+    USER_ID       NUMBER        not null,
+    CONTENT       VARCHAR2(1000),
+    DELETE_FLAG   NUMBER        not null,
+    CREATE_TIME   TIMESTAMP(6)  not null,
+    UPDATE_TIME   TIMESTAMP(6)  not null,
+    VIEW_COUNT    NUMBER default 0,
+    LIKE_COUNT    NUMBER default 0,
+    COMMENT_COUNT NUMBER default 0
+)
+/
 
--- Add comment
-COMMENT ON TABLE BBS_FORUM IS '帖子';
-COMMENT ON COLUMN BBS_FORUM.title IS '标题';
-COMMENT ON COLUMN BBS_FORUM.cover_image IS '封面图';
-COMMENT ON COLUMN BBS_FORUM.user_id IS '发布用户的id';
-COMMENT ON COLUMN BBS_FORUM.content IS '正文内容';
-COMMENT ON COLUMN BBS_FORUM.delete_flag IS '删除标记，0正常，1删除';
-COMMENT ON COLUMN BBS_FORUM.create_time IS '创建时间';
-COMMENT ON COLUMN BBS_FORUM.update_time IS '修改时间';
+comment on table BBS_FORUM is '帖子'
+/
 
--- Auto-increment trigger for forum
-CREATE OR REPLACE TRIGGER forum_id_trigger
-    BEFORE INSERT ON BBS_FORUM
-    FOR EACH ROW
+comment on column BBS_FORUM.TITLE is '标题'
+/
+
+comment on column BBS_FORUM.COVER_IMAGE is '封面图'
+/
+
+comment on column BBS_FORUM.USER_ID is '发布用户的id'
+/
+
+comment on column BBS_FORUM.CONTENT is '正文内容'
+/
+
+comment on column BBS_FORUM.DELETE_FLAG is '删除标记，0正常，1删除'
+/
+
+comment on column BBS_FORUM.CREATE_TIME is '创建时间'
+/
+
+comment on column BBS_FORUM.UPDATE_TIME is '修改时间'
+/
+
+create trigger FORUM_ID_TRIGGER
+    before insert
+    on BBS_FORUM
+    for each row
 BEGIN
     SELECT forum_seq.NEXTVAL INTO :NEW.id FROM dual;
 END;
 /
 
--- User table
-CREATE TABLE BBS_USER (
-                        id          NUMBER PRIMARY KEY,
-                        account     VARCHAR2(255) NOT NULL,
-                        name        VARCHAR2(255) NOT NULL,
-                        password    VARCHAR2(255) NOT NULL,
-                        mail        VARCHAR2(255) NOT NULL,
-                        head        VARCHAR2(255) NOT NULL,
-                        auth        NUMBER NOT NULL,
-                        create_time TIMESTAMP NOT NULL,
-                        update_time TIMESTAMP NOT NULL
-);
+create table BBS_USER
+(
+    ID          NUMBER        not null
+        primary key,
+    ACCOUNT     VARCHAR2(255) not null,
+    NAME        VARCHAR2(255) not null,
+    PASSWORD    VARCHAR2(255) not null,
+    MAIL        VARCHAR2(255) not null,
+    HEAD        VARCHAR2(255) not null,
+    AUTH        NUMBER        not null,
+    CREATE_TIME TIMESTAMP(6)  not null,
+    UPDATE_TIME TIMESTAMP(6)  not null
+)
+/
 
--- Add comment
-COMMENT ON TABLE BBS_USER IS '用户信息表';
-COMMENT ON COLUMN BBS_USER.account IS '账号';
-COMMENT ON COLUMN BBS_USER.name IS '名称';
-COMMENT ON COLUMN BBS_USER.password IS '密码';
-COMMENT ON COLUMN BBS_USER.mail IS '邮箱';
-COMMENT ON COLUMN BBS_USER.head IS '头像文件名称';
-COMMENT ON COLUMN BBS_USER.auth IS '权限登记，0用户，1管理员';
-COMMENT ON COLUMN BBS_USER.create_time IS '创建时间';
-COMMENT ON COLUMN BBS_USER.update_time IS '修改时间';
+comment on table BBS_USER is '用户信息表'
+/
 
--- Auto-increment trigger for user
-CREATE OR REPLACE TRIGGER user_id_trigger
-    BEFORE INSERT ON BBS_USER
-    FOR EACH ROW
+comment on column BBS_USER.ACCOUNT is '账号'
+/
+
+comment on column BBS_USER.NAME is '名称'
+/
+
+comment on column BBS_USER.PASSWORD is '密码'
+/
+
+comment on column BBS_USER.MAIL is '邮箱'
+/
+
+comment on column BBS_USER.HEAD is '头像文件名称'
+/
+
+comment on column BBS_USER.AUTH is '权限登记，0用户，1管理员'
+/
+
+comment on column BBS_USER.CREATE_TIME is '创建时间'
+/
+
+comment on column BBS_USER.UPDATE_TIME is '修改时间'
+/
+
+create trigger USER_ID_TRIGGER
+    before insert
+    on BBS_USER
+    for each row
 BEGIN
     SELECT user_seq.NEXTVAL INTO :NEW.id FROM dual;
 END;
 /
+
+create table BBS_LIKE
+(
+    ID          NUMBER not null
+        constraint ID
+            primary key,
+    TYPE        NUMBER,
+    TARGET_ID   NUMBER,
+    USER_ID     NUMBER,
+    STATUS      NUMBER default 1,
+    CREATE_TIME TIMESTAMP(6),
+    UPDATE_TIME TIMESTAMP(6)
+)
+/
+
+create trigger LIKE_ID_TRIGGER
+    before insert
+    on BBS_LIKE
+    for each row
+BEGIN
+    SELECT like_seq.NEXTVAL INTO :NEW.id FROM dual;
+END;
+/
+
